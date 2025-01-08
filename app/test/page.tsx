@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 type Question = {
   text: string;
+  explain: string;
   answers: { text: string; isTrue: boolean }[];
   choose?: number;
 };
@@ -66,14 +67,16 @@ export default function EnglishTest() {
                 {question.answers.map((ans, j) => {
                   return (
                     <div key={j} className="flex flex-row gap-2">
-                      <input
-                        type="radio"
-                        name={i + "ans"}
-                        onChange={() => {
-                          handleChoose(i, j);
-                        }}
-                      />
-                      <p>{ans.text}</p>
+                      <label className="flex flex-row gap-2">
+                        <input
+                          type="radio"
+                          name={i + "ans"}
+                          onChange={() => {
+                            handleChoose(i, j);
+                          }}
+                        ></input>
+                        {ans.text}
+                      </label>
                     </div>
                   );
                 })}
@@ -95,19 +98,14 @@ export default function EnglishTest() {
             </div>
             {questions.map((q, i) => {
               const trueIndex = q.answers.findIndex((p) => p.isTrue);
-              if (trueIndex === q.choose) {
+              if (trueIndex !== q.choose) {
                 return (
-                  <div key={i} className="text-green-500">
-                    {q.text}: {q.answers[trueIndex].text}
+                  <div key={i} className="text-red-500">
+                    {i + 1}. <b>&quot;{q.answers[trueIndex].text}&quot;</b> -{" "}
+                    {q.explain}
                   </div>
                 );
               }
-
-              return (
-                <div key={i} className="text-red-500">
-                  {q.text}: {q.answers[trueIndex].text}
-                </div>
-              );
             })}
           </div>
         )}
