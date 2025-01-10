@@ -72,7 +72,7 @@ export default function AddPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await addQuestions({ answers: answers, text: question });
+    await addQuestions({ answers: answers, text: question, explain: explain });
     window.alert("added");
 
     resetDefault();

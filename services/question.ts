@@ -10,6 +10,7 @@ type AddQuestion = {
   text: string;
   answers: { text: string; isTrue: boolean }[];
   choose?: number;
+  explain: string;
 };
 
 export async function addQuestions(data: AddQuestion) {
