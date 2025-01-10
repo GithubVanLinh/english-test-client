@@ -98,7 +98,7 @@ export default function EnglishTest() {
             </div>
             {questions.map((q, i) => {
               const trueIndex = q.answers.findIndex((p) => p.isTrue);
-              if (trueIndex !== q.choose) {
+              if (trueIndex >= 0 && trueIndex !== q.choose) {
                 return (
                   <div key={i} className="text-red-500">
                     {i + 1}. <b>&quot;{q.answers[trueIndex].text}&quot;</b> -{" "}

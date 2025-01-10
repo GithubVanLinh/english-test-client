@@ -4,7 +4,13 @@ import BorderBotInput from "@/components/Input/BorderBotInput";
 import BorderBotTextArea from "@/components/TextArea/BorderBotTextarea";
 import { addQuestions } from "@/services/question";
 import { TrashIcon } from "@heroicons/react/24/outline";
-import { ChangeEvent, FormEvent, MouseEvent, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  KeyboardEvent,
+  MouseEvent,
+  useState,
+} from "react";
 
 const defaultAnswers = [
   { text: "", isTrue: false },
@@ -13,11 +19,14 @@ const defaultAnswers = [
   { text: "", isTrue: false },
 ];
 
+const INDEX_OFFSET = 2;
+
 export default function AddPage() {
   const [answers, setAnswers] =
     useState<{ text: string; isTrue: boolean }[]>(defaultAnswers);
 
   const [question, setQuestion] = useState("");
+  const [explain, setExplain] = useState("");
 
   const handleAddAnswer = (e: MouseEvent) => {
     e.preventDefault();
@@ -50,13 +59,58 @@ export default function AddPage() {
     setQuestion(e.target.value);
   };
 
+  const handleExplainChange = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setExplain(e.target.value);
+  };
+
+  const resetDefault = () => {
+    setQuestion("");
+    setExplain("");
+    setAnswers(defaultAnswers);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     await addQuestions({ answers: answers, text: question });
     window.alert("added");
 
-    setQuestion("");
-    setAnswers(defaultAnswers);
+    resetDefault();
+  };
+
+  const inputEvent = async (e: KeyboardEvent<HTMLFormElement>) => {
+    if (e.code === "Enter") {
+      e.preventDefault();
+      const element = e.target as HTMLElement;
+      console.log(element);
+      const index = element.getAttribute("data-index");
+      if (index) {
+        if (+index == answers.length + INDEX_OFFSET - 1) {
+          handleSubmit(e);
+        } else
+          (
+            (e.currentTarget.querySelector(
+              `[data-index="${+index + 1}"]`
+            ) as HTMLInputElement) || HTMLTextAreaElement
+          ).focus();
+      }
+    }
+    if (e.code === "Tab") {
+      e.preventDefault();
+      if (!(e.target instanceof HTMLInputElement)) {
+        return;
+      }
+      const element = e.target as HTMLElement;
+      console.log(element);
+      const index = element.getAttribute("data-index");
+      if (index) {
+        (
+          (e.currentTarget.querySelector(
+            `#check-${String(+index - INDEX_OFFSET)}`
+          ) as HTMLInputElement) || HTMLTextAreaElement
+        ).click();
+      }
+    }
   };
 
   return (
@@ -64,12 +118,25 @@ export default function AddPage() {
       <div className="w-full bg-blue-200 p-2 ">Header</div>
       <div className="w-1/2">
         <div className="font-bold"></div>
-        <BorderBotTextArea
-          onChange={handleQuestionChange}
-          value={question}
-          placeholder="Question"
-        />
-        <form className="flex flex-col" onSubmit={handleSubmit}>
+        <form
+          className="flex flex-col"
+          onSubmit={handleSubmit}
+          onKeyDown={inputEvent}
+        >
+          <BorderBotTextArea
+            dataIndex={0}
+            onChange={handleQuestionChange}
+            value={question}
+            placeholder="Question"
+          />
+          <div>
+            <BorderBotTextArea
+              dataIndex={1}
+              onChange={handleExplainChange}
+              value={explain}
+              placeholder="Explain"
+            />
+          </div>
           <div>
             <span className="font-bold">Answers:</span>
             <button
@@ -83,6 +150,7 @@ export default function AddPage() {
             {answers.map((ans, i) => (
               <div className="flex flex-row w-full gap-2" key={i}>
                 <input
+                  id={"check-" + String(i)}
                   type="checkbox"
                   checked={ans.isTrue}
                   onChange={(e) => {
@@ -90,6 +158,7 @@ export default function AddPage() {
                   }}
                 />
                 <BorderBotInput
+                  dataIndex={i + INDEX_OFFSET}
                   value={ans.text}
                   onChange={(e) => {
                     handleTextChange(i, e.target.value);
